@@ -62,7 +62,7 @@ export default class ObsidianAutoCardLink extends Plugin {
       EditorExtensions.getSelectedText(editor) || ""
     ).trim();
 
-    const codeBlockGenerator = new CodeBlockGenerator(editor);
+    const codeBlockGenerator = new CodeBlockGenerator(editor, this.app, this.settings);
 
     for (const line of selectedText.split(/[\n ]/)) {
       if (CheckIf.isUrl(line)) {
@@ -87,16 +87,13 @@ export default class ObsidianAutoCardLink extends Plugin {
       return;
     }
 
-    console.log(clipboardText);
-    console.log(CheckIf.isUrl(clipboardText));
-
     // If not URL, just paste
     if (!CheckIf.isUrl(clipboardText) || CheckIf.isImage(clipboardText)) {
       editor.replaceSelection(clipboardText);
       return;
     }
 
-    const codeBlockGenerator = new CodeBlockGenerator(editor);
+    const codeBlockGenerator = new CodeBlockGenerator(editor, this.app, this.settings);
     await codeBlockGenerator.convertUrlToCodeBlock(clipboardText);
     return;
   }
@@ -130,7 +127,7 @@ export default class ObsidianAutoCardLink extends Plugin {
     evt.stopPropagation();
     evt.preventDefault();
 
-    const codeBlockGenerator = new CodeBlockGenerator(editor);
+    const codeBlockGenerator = new CodeBlockGenerator(editor, this.app, this.settings);
     await codeBlockGenerator.convertUrlToCodeBlock(clipboardText);
     return;
   };

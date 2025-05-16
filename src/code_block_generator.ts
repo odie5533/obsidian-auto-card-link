@@ -1,4 +1,5 @@
-import { Editor, Notice, requestUrl } from "obsidian";
+import { Editor, Notice, requestUrl, App } from "obsidian";
+import { ObsidianAutoCardLinkSettings } from "./settings";
 
 import { LinkMetadata } from "src/interfaces";
 import { EditorExtensions } from "src/editor_enhancements";
@@ -6,9 +7,13 @@ import { LinkMetadataParser } from "src/link_metadata_parser";
 
 export class CodeBlockGenerator {
   editor: Editor;
+  app?: App;
+  settings?: ObsidianAutoCardLinkSettings;
 
-  constructor(editor: Editor) {
+  constructor(editor: Editor, app?: App, settings?: ObsidianAutoCardLinkSettings) {
     this.editor = editor;
+    this.app = app;
+    this.settings = settings;
   }
 
   async convertUrlToCodeBlock(url: string): Promise<void> {
@@ -77,7 +82,12 @@ export class CodeBlockGenerator {
     }
 
     const parser = new LinkMetadataParser(url, res.text);
-    return parser.parse();
+    // Use app/settings to control image download
+    if (this.app && this.settings?.downloadImages) {
+      return parser.parse(this.app, true);
+    } else {
+      return parser.parse();
+    }
   }
 
   private createBlockHash(): string {

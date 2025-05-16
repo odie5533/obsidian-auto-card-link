@@ -162,8 +162,7 @@ export class CodeBlockProcessor {
       ""
     )?.path;
 
-    if (!imageRelativePath) return link;
-
-    return this.app.vault.adapter.getResourcePath(imageRelativePath);
+    // fallback to allow for links to hidden .prefixed files
+    return this.app.vault.adapter.getResourcePath(imageRelativePath || link);
   }
 }

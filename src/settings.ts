@@ -5,11 +5,13 @@ import ObsidianAutoCardLink from "src/main";
 export interface ObsidianAutoCardLinkSettings {
   showInMenuItem: boolean;
   enhanceDefaultPaste: boolean;
+  downloadImages: boolean; // New setting for downloading images
 }
 
 export const DEFAULT_SETTINGS: ObsidianAutoCardLinkSettings = {
   showInMenuItem: true,
   enhanceDefaultPaste: false,
+  downloadImages: false, // Default to false
 };
 
 export class ObsidianAutoCardLinkSettingTab extends PluginSettingTab {
@@ -51,6 +53,23 @@ export class ObsidianAutoCardLinkSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             if (!this.plugin.settings) return;
             this.plugin.settings.showInMenuItem = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
+    // New setting for downloading images
+    new Setting(containerEl)
+      .setName("Download external images and favicons")
+      .setDesc(
+        "Automatically download and save external images and favicons locally when creating a card link."
+      )
+      .addToggle((val) => {
+        if (!this.plugin.settings) return;
+        return val
+          .setValue(this.plugin.settings.downloadImages)
+          .onChange(async (value) => {
+            if (!this.plugin.settings) return;
+            this.plugin.settings.downloadImages = value;
             await this.plugin.saveSettings();
           });
       });

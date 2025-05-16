@@ -1,4 +1,6 @@
 import { LinkMetadata } from "src/interfaces";
+import { App } from "obsidian";
+import { downloadAndCacheImage } from "./image_downloader";
 
 export class LinkMetadataParser {
   url: string;
@@ -12,7 +14,7 @@ export class LinkMetadataParser {
     this.htmlDoc = htmlDoc;
   }
 
-  async parse(): Promise<LinkMetadata | undefined> {
+  async parse(app?: App, downloadImages?: boolean): Promise<LinkMetadata | undefined> {
     const title = this.getTitle()
       ?.replace(/\r\n|\n|\r/g, "")
       .replace(/\\/g, "\\\\")
@@ -26,8 +28,29 @@ export class LinkMetadataParser {
       .replace(/"/g, '\\"')
       .trim();
     const { hostname } = new URL(this.url);
-    const favicon = await this.getFavicon();
-    const image = await this.getImage();
+    const faviconUrl = await this.getFavicon();
+    const imageUrl = await this.getImage();
+
+    let favicon = faviconUrl;
+    let image = imageUrl;
+    if (downloadImages && app) {
+      if (faviconUrl) {
+        try {
+          const localFavicon = await downloadAndCacheImage(app, faviconUrl);
+          if (localFavicon) favicon = `"[[${localFavicon}]]"`;
+        } catch (e) {
+          console.error("Failed to download favicon", faviconUrl, e);
+        }
+      }
+      if (imageUrl) {
+        try {
+          const localImage = await downloadAndCacheImage(app, imageUrl);
+          if (localImage) image = `"[[${localImage}]]"`;
+        } catch (e) {
+          console.error("Failed to download image", imageUrl, e);
+        }
+      }
+    }
 
     return {
       url: this.url,
